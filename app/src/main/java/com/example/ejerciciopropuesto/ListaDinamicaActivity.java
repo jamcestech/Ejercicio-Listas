@@ -2,6 +2,7 @@ package com.example.ejerciciopropuesto;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -27,6 +28,9 @@ public class ListaDinamicaActivity extends AppCompatActivity implements AdapterV
 
         cosas.add(new Element("Hola", R.drawable.uno));
         ListAdapter adapter =  new MiAdapter(this, R.layout.custom, cosas);
+
+       Element x = new Element("Hola", R.drawable.uno);
+        Log.d("json", x.toJson());
 
         listaDinamica.setAdapter(adapter);
 
