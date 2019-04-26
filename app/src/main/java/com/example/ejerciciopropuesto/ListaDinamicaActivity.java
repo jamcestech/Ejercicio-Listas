@@ -1,5 +1,6 @@
 package com.example.ejerciciopropuesto;
 
+import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,6 +17,8 @@ public class ListaDinamicaActivity extends AppCompatActivity implements AdapterV
     ArrayList<Element> cosas;
     ListView listaDinamica;
     EditText et;
+    SharedPreferences sharedPreferences;
+    ElementList elementList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,15 +29,34 @@ public class ListaDinamicaActivity extends AppCompatActivity implements AdapterV
         listaDinamica = findViewById(R.id.listaDinamica);
         cosas = new ArrayList<>();
 
-        cosas.add(new Element("Hola", R.drawable.uno));
+        Element example = new Element("Hola", R.drawable.uno);
+       // cosas.add(example);
         ListAdapter adapter =  new MiAdapter(this, R.layout.custom, cosas);
 
-       Element x = new Element("Hola", R.drawable.uno);
-        Log.d("json", x.toJson());
+      sharedPreferences = getSharedPreferences("cosas", MODE_PRIVATE);
+
+        String json = sharedPreferences.getString("elements", "");
 
         listaDinamica.setAdapter(adapter);
 
         listaDinamica.setOnItemClickListener(this);
+
+        elementList = new ElementList();
+        if (json != null && !json.isEmpty()) {
+            elementList = elementList.fromJson(json);
+
+            for (Element e: elementList.elements) {
+
+                cosas.add(new Element(e.txt, e.img));
+                adapter =  new MiAdapter(this, R.layout.custom, cosas);
+                listaDinamica.setAdapter(adapter);
+            }
+        }
+        Log.d("Tamaño", elementList.elements.size() + "");
+        if(elementList.elements.size() == 0) {
+            elementList.addElement(example);
+            guardadoPreferencias();
+        }
     }
 
     @Override
@@ -44,18 +66,31 @@ public class ListaDinamicaActivity extends AppCompatActivity implements AdapterV
         } else {
             cosas.get(position).img = R.drawable.uno;
         }
+        elementList.editElement(position, cosas.get(position).img);
+
         refresAdapter();
     }
 
     public void addTarea(View view) {
-        cosas.add(new Element(et.getText().toString(), R.drawable.uno));
+        Element eleNuevo = new Element(et.getText().toString(), R.drawable.uno);
+        cosas.add(eleNuevo);
         et.setText("");
         refresAdapter();
+
+        elementList.addElement(eleNuevo);
+        guardadoPreferencias();
     }
 
     public void refresAdapter() {
         ArrayAdapter adapter = (ArrayAdapter) listaDinamica.getAdapter();
         adapter.notifyDataSetChanged();
+
+        guardadoPreferencias();
     }
 
+    public void guardadoPreferencias() {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("elements", elementList.toJson());
+        editor.apply();
+    }
 }
